@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useCategories } from '../hooks/useCategories';
 import { ProductsStackParams } from '../navigator/ProductsNavigator';
+import { LoadingScreen } from './LoadingScreen';
 
 interface Props extends StackScreenProps<ProductsStackParams, 'ProductScreen'> { };
 
@@ -11,7 +12,7 @@ const ProductScreen = ({ navigation, route }: Props) => {
 
     const { id, name = '' } = route.params;
 
-    const { categories } = useCategories();
+    const { categories, isLoading } = useCategories();
 
     const [selectedLanguage, setSelectedLanguage] = useState();
 
@@ -20,6 +21,8 @@ const ProductScreen = ({ navigation, route }: Props) => {
             title: (name) ? name : 'Nuevo producto'
         });
     }, [])
+
+    if (isLoading) return <LoadingScreen />;
 
     return (
         <View style={styles.productContainer}>

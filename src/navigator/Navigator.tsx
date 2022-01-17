@@ -13,7 +13,7 @@ const Navigator = () => {
 
     const { status } = useContext(AuthContext);
 
-    if (status === 'checking') return <Stack.Screen name="ProtectedScreen" component={ProtectedScreen} />;
+    if (status === 'checking') return <LoadingScreen />;
 
     return (
         <Stack.Navigator
