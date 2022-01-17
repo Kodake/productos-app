@@ -2,6 +2,7 @@ import { Picker } from '@react-native-picker/picker';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useCategories } from '../hooks/useCategories';
 import { ProductsStackParams } from '../navigator/ProductsNavigator';
 
 interface Props extends StackScreenProps<ProductsStackParams, 'ProductScreen'> { };
@@ -9,6 +10,8 @@ interface Props extends StackScreenProps<ProductsStackParams, 'ProductScreen'> {
 const ProductScreen = ({ navigation, route }: Props) => {
 
     const { id, name = '' } = route.params;
+
+    const { categories } = useCategories();
 
     const [selectedLanguage, setSelectedLanguage] = useState();
 
@@ -37,13 +40,17 @@ const ProductScreen = ({ navigation, route }: Props) => {
                         selectedValue={selectedLanguage}
                         onValueChange={(itemValue, itemIndex) =>
                             setSelectedLanguage(itemValue)
-                        }>
-                        <Picker.Item label="JavaScript" value="js" />
-                        <Picker.Item label="JavaScript" value="js" />
-                        <Picker.Item label="JavaScript" value="js" />
-                        <Picker.Item label="JavaScript" value="js" />
-                        <Picker.Item label="JavaScript" value="js" />
-                        <Picker.Item label="JavaScript" value="js" />
+                        }
+                    >
+                        {
+                            categories.map(c => (
+                                <Picker.Item
+                                    label={c.nombre}
+                                    value={c._id}
+                                    key={c._id}
+                                />
+                            ))
+                        }
                     </Picker>
                 </View>
 
@@ -104,7 +111,6 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(0,0,0,0.2)',
         marginTop: 5,
         marginBottom: 15,
-        // overflow: 'hidden',
         justifyContent: 'center',
         height: 25
     },
