@@ -1,7 +1,7 @@
-import React, { createContext, useEffect, useReducer } from "react";
+import React, { createContext, useEffect, useReducer } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import productsApi from "../api/productsApi";
-import { LoginData, LoginResponse, Usuario } from "../interfaces/appInterfaces";
+import { LoginData, LoginResponse, RegisterData, Usuario } from "../interfaces/appInterfaces";
 import { authReducer, AuthState } from "./authReducer";
 
 type AuthContextProps = {
@@ -9,7 +9,7 @@ type AuthContextProps = {
     token: string | null;
     user: Usuario | null;
     status: 'checking' | 'authenticated' | 'not-authenticated';
-    signUp: () => void;
+    signUp: (registerData: RegisterData) => void;
     signIn: (loginData: LoginData) => void;
     logOut: () => void;
     removeError: () => void;
@@ -53,9 +53,50 @@ export const AuthProvider = ({ children }: any) => {
         });
     }
 
+    // const signIn = async ({ correo, password }: LoginData) => {
+    //     try {
+    //         const { data } = await productsApi.post<LoginResponse>('/auth/login', { correo, password });
+    //         dispatch({
+    //             type: 'signUp',
+    //             payload: {
+    //                 token: data.token,
+    //                 user: data.usuario
+    //             }
+    //         });
+
+    //         await AsyncStorage.setItem('token', data.token);
+    //     } catch (error: any) {
+    //         dispatch({
+    //             type: 'addError',
+    //             payload: error.response.data.msg || 'Información incorrecta'
+    //         });
+    //     }
+    // };
+
     const signIn = async ({ correo, password }: LoginData) => {
+
         try {
-            const { data } = await productsApi.post<LoginResponse>('/auth/login', { correo, password });
+            productsApi.post<LoginResponse>('/auth/login', { correo, password }).then(async (data: any) => {
+                dispatch({
+                    type: 'signUp',
+                    payload: {
+                        token: data.token,
+                        user: data.usuario
+                    }
+                });
+                await AsyncStorage.setItem('token', data.token);
+            }).catch((err: any) => { console.log(err) });
+        } catch (error: any) {
+            dispatch({
+                type: 'addError',
+                payload: error.response.data.msg || 'Información incorrecta'
+            })
+        }
+    };
+
+    const signUp = async ({ nombre, correo, password }: RegisterData) => {
+        try {
+            const { data } = await productsApi.post<LoginResponse>('/usuarios', { nombre, correo, password });
             dispatch({
                 type: 'signUp',
                 payload: {
@@ -66,14 +107,15 @@ export const AuthProvider = ({ children }: any) => {
 
             await AsyncStorage.setItem('token', data.token);
         } catch (error: any) {
-            dispatch({ type: 'addError', payload: error.response.data.msg || 'Información incorrecta' });
+            dispatch({
+                type: 'addError',
+                payload: error.response.data.errors[0].msg || 'Revise la información'
+            });
         }
     };
 
-    const signUp = () => { };
-
     const logOut = async () => {
-        await AsyncStorage.removeItem('token');
+        // await AsyncStorage.removeItem('token');
         dispatch({ type: 'logOut' });
     };
 
@@ -93,4 +135,3 @@ export const AuthProvider = ({ children }: any) => {
         </AuthContext.Provider>
     )
 }
-

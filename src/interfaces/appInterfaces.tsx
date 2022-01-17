@@ -3,6 +3,12 @@ export interface LoginData {
     password:           string;
 }
 
+export interface RegisterData {
+    nombre:             string;
+    correo:             string;
+    password:           string;
+}
+
 export interface LoginResponse {
     usuario:            Usuario;
     token:              string;
@@ -16,4 +22,23 @@ export interface Usuario {
     email:              string;
     uid:                string;
     img?:               string;
+}
+
+export interface ProductsResponse {
+    total:              number;
+    productos:          Producto[];
+}
+
+export interface Producto {
+    _id:                string;
+    precio:             number;
+    nombre:             string;
+    categoria:          Categoria;
+    usuario:            Usuario;
+    img?:               string
+}
+
+export interface Categoria {
+    _id:                string;
+    nombre:             string;
 }

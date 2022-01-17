@@ -1,11 +1,11 @@
-import React from 'react'
-import { View } from 'react-native'
+import React from 'react';
+import { View } from 'react-native';
 
 interface Props {
     rotate: string;
 }
 
-const Background = ({rotate}: Props) => {
+const Background = ({ rotate }: Props) => {
     return (
         <View
             style={{
@@ -15,7 +15,7 @@ const Background = ({rotate}: Props) => {
                 width: 1000,
                 height: 1200,
                 transform: [
-                    {rotate: rotate}
+                    { rotate: rotate }
                 ]
             }}
         />
