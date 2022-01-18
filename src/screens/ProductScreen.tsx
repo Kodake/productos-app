@@ -14,9 +14,10 @@ const ProductScreen = ({ navigation, route }: Props) => {
 
     const { id = '', name = '' } = route.params;
 
-    const { categories } = useCategories();
+    const { categories, isLoading } = useCategories();
     const { loadProductById, addProduct, updateProduct, deleteProduct } = useContext(ProductsContext);
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     
     const { _id, categoriaId, nombre, img, form, onChange, setFormValue } = useForm({
         _id: id,
@@ -66,9 +67,9 @@ const ProductScreen = ({ navigation, route }: Props) => {
         Alert.alert('Eliminación de producto', '¿Desea eliminar el producto?',
             [{
                 text: 'Ok', onPress: async () => {
-                    setIsLoading(true);
+                    setLoading(true);
                     await deleteProduct(_id);
-                    setIsLoading(false);
+                    setLoading(false);
                     navigation.navigate('ProductsScreen');
                     onSuccessDelete();
                 }
@@ -88,7 +89,7 @@ const ProductScreen = ({ navigation, route }: Props) => {
         );
     }
 
-    if (isLoading) return <LoadingScreen />;
+    if (isLoading || loading) return <LoadingScreen />;
 
     return (
         <View style={styles.productContainer}>
