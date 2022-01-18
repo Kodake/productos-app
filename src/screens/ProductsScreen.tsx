@@ -1,20 +1,24 @@
-import React, { useContext, useEffect } from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, View, TouchableOpacity, RefreshControl, Alert } from 'react-native'
 
 import { StackScreenProps } from '@react-navigation/stack';
 import { ProductsContext } from '../context/ProductsContext';
 import { ProductsStackParams } from '../navigator/ProductsNavigator';
+import { LoadingScreen } from './LoadingScreen';
 
 interface Props extends StackScreenProps<ProductsStackParams, 'ProductsScreen'> { };
 
 const ProductsScreen = ({ navigation }: Props) => {
 
-    const { products, loadProducts } = useContext(ProductsContext);
+    const { products, loadProducts, deleteProduct } = useContext(ProductsContext);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
                 <TouchableOpacity
+
                     activeOpacity={0.65}
                     style={styles.addProduct}
                     onPress={() => navigation.navigate('ProductScreen', {})}
@@ -23,30 +27,73 @@ const ProductsScreen = ({ navigation }: Props) => {
                 </TouchableOpacity>
             )
         })
-    }, [])
+    }, []);
+
+    const pullToRefresh = async () => {
+        setIsRefreshing(true);
+        await loadProducts();
+        setIsRefreshing(false);
+    }
+
+    const onDeleteProduct = async (id: string) => {
+        Alert.alert('Eliminación de producto', '¿Desea eliminar el producto?',
+            [{
+                text: 'Ok', onPress: async () => {
+                    setIsLoading(true);
+                    await deleteProduct(id);
+                    setIsLoading(false);
+                    onSuccessDelete();
+                }
+            },
+            {
+                text: 'Cancel',
+                onPress: () => { }
+            }]
+        );
+    }
+
+    const onSuccessDelete = () => {
+        Alert.alert('Eliminación de producto', 'Producto eliminado correctamente',
+            [{
+                text: 'Ok', onPress: () => { }
+            }]
+        );
+    }
 
     // TODO: PUll to refresh
 
+    if (isLoading) return <LoadingScreen />;
+
     return (
         <View style={styles.productsContainer}>
-
             <FlatList
                 data={products}
                 keyExtractor={(p) => p._id}
                 renderItem={({ item }) => (
-                    <TouchableOpacity
-                        activeOpacity={0.65}
-                        onPress={() => navigation.navigate('ProductScreen', {
-                            id: item._id,
-                            name: item.nombre
-                        })}
-                    >
-                        <Text style={styles.productName}>{item.nombre}</Text>
-                    </TouchableOpacity>
+                    <>
+                        <TouchableOpacity
+                            activeOpacity={0.65}
+                            onPress={() => navigation.navigate('ProductScreen', {
+                                id: item._id,
+                                name: item.nombre
+                            })}
+                            onLongPress={onDeleteProduct.bind(null, item._id)}
+                        >
+                            <Text style={styles.productName}>{item.nombre}</Text>
+                        </TouchableOpacity>
+                    </>
                 )}
+
                 ItemSeparatorComponent={() => (
                     <View style={styles.itemSeparator} />
                 )}
+
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={pullToRefresh}
+                    />
+                }
             />
 
         </View>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
 export const useForm = <T extends Object>(initState: T) => {
 
@@ -11,9 +11,18 @@ export const useForm = <T extends Object>(initState: T) => {
         });
     }
 
+    const setFormValue = (form: T) => {
+        // setState({
+        //     ...state,
+        //     ...form
+        // });
+        setState(form);
+    }
+
     return {
         ...state,
         form: state,
-        onChange
+        onChange,
+        setFormValue
     }
 }

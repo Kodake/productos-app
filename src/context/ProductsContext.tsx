@@ -5,7 +5,7 @@ import { Producto, ProductsResponse } from '../interfaces/appInterfaces';
 type ProductsContextProps = {
     products: Producto[];
     loadProducts: () => Promise<void>;
-    addProduct: (categoryId: string, productName: string) => Promise<void>;
+    addProduct: (categoryId: string, productName: string) => Promise<Producto>;
     updateProduct: (categoryId: string, productName: string, productId: string) => Promise<void>;
     deleteProduct: (id: string) => Promise<void>;
     loadProductById: (id: string) => Promise<Producto>;
@@ -24,25 +24,35 @@ export const ProductsProvider = ({ children }: any) => {
 
     const loadProducts = async () => {
         const resp = await productsApi.get<ProductsResponse>('/productos?limite=50');
-
         // setProducts([...products, ...resp.data.productos]);
         setProducts([...resp.data.productos]);
     }
 
-    const addProduct = async (categoryId: string, productName: string) => {
-
+    const addProduct = async (categoryId: string, productName: string):Promise<Producto> => {
+        const resp = await productsApi.post<Producto>('/productos', {
+            nombre: productName,
+            categoria: categoryId
+        });
+        setProducts([...products, resp.data]);
+        return resp.data;
     }
 
     const updateProduct = async (categoryId: string, productName: string, productId: string) => {
-
+        const resp = await productsApi.put<Producto>(`/productos/${productId}`, {
+            nombre: productName,
+            categoria: categoryId
+        });
+        setProducts([...products.map(prod => prod._id === productId ? resp.data : prod)]);
     }
 
-    const deleteProduct = async (id: string) => {
-
+    const deleteProduct = async (id: string) => {        
+        const resp = await productsApi.delete<Producto>(`/productos/${id}`);      
+        setProducts(products.filter(prod => prod._id !== resp.data._id));        
     }
 
-    const loadProductById = async (id: string) => {
-        throw new Error('Not implemented');
+    const loadProductById = async (id: string): Promise<Producto> => {
+        const resp = await productsApi.get<Producto>(`/productos/${id}`);
+        return resp.data;
     }
 
     // TODO: Change type then

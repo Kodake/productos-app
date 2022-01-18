@@ -1,5 +1,5 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect } from 'react';
 import { Alert, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import Background from '../components/Background';
 import { WhiteLogo } from '../components/WhiteLogo';
@@ -28,9 +28,7 @@ const LoginScreen = ({ navigation }: Props) => {
     }, [errorMessage]);
 
     const onLogin = () => {
-        console.log({ email, password });
         Keyboard.dismiss();
-
         signIn({ correo: email, password: password });
     }
 

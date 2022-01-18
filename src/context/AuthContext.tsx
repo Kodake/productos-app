@@ -1,8 +1,8 @@
 import React, { createContext, useEffect, useReducer } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import productsApi from "../api/productsApi";
-import { LoginData, LoginResponse, RegisterData, Usuario } from "../interfaces/appInterfaces";
-import { authReducer, AuthState } from "./authReducer";
+import productsApi from '../api/productsApi';
+import { LoginData, LoginResponse, RegisterData, Usuario } from '../interfaces/appInterfaces';
+import { authReducer, AuthState } from './authReducer';
 
 type AuthContextProps = {
     errorMessage: string;
@@ -74,7 +74,6 @@ export const AuthProvider = ({ children }: any) => {
     // };
 
     const signIn = async ({ correo, password }: LoginData) => {
-
         try {
             productsApi.post<LoginResponse>('/auth/login', { correo, password }).then(async (data: any) => {
                 dispatch({
@@ -104,7 +103,6 @@ export const AuthProvider = ({ children }: any) => {
                     user: data.usuario
                 }
             });
-
             await AsyncStorage.setItem('token', data.token);
         } catch (error: any) {
             dispatch({

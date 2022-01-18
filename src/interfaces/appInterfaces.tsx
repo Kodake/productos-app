@@ -31,11 +31,12 @@ export interface ProductsResponse {
 
 export interface Producto {
     _id:                string;
+    estado:             boolean;
     precio:             number;
     nombre:             string;
     categoria:          Categoria;
-    usuario:            Usuario;
-    img?:               string
+    usuario:            Categoria;
+    img?:               string;
 }
 
 export interface CategoriesResponse {

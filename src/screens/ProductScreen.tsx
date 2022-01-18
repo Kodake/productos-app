@@ -1,8 +1,10 @@
 import { Picker } from '@react-native-picker/picker';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import React, { useContext, useEffect } from 'react';
+import { Button, Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ProductsContext } from '../context/ProductsContext';
 import { useCategories } from '../hooks/useCategories';
+import { useForm } from '../hooks/useForm';
 import { ProductsStackParams } from '../navigator/ProductsNavigator';
 import { LoadingScreen } from './LoadingScreen';
 
@@ -10,17 +12,54 @@ interface Props extends StackScreenProps<ProductsStackParams, 'ProductScreen'> {
 
 const ProductScreen = ({ navigation, route }: Props) => {
 
-    const { id, name = '' } = route.params;
+    const { id = '', name = '' } = route.params;
 
     const { categories, isLoading } = useCategories();
+    const { loadProductById, addProduct, updateProduct, deleteProduct } = useContext(ProductsContext);
 
-    const [selectedLanguage, setSelectedLanguage] = useState();
+    const { _id, categoriaId, nombre, img, form, onChange, setFormValue } = useForm({
+        _id: id,
+        categoriaId: '',
+        nombre: name,
+        img: ''
+    });
 
     useEffect(() => {
         navigation.setOptions({
-            title: (name) ? name : 'Nuevo producto'
+            // title: (name) ? name : 'Nombre del producto'
+            title: (nombre) ? nombre : 'Nombre del producto'
         });
-    }, [])
+    }, [nombre]);
+
+    useEffect(() => {
+        loadProduct();
+    }, []);
+
+    const loadProduct = async () => {
+        if (id.length === 0) return;
+        const product = await loadProductById(id);
+        setFormValue({
+            _id: id,
+            categoriaId: product.categoria._id,
+            nombre,
+            img: product.img || ''
+        })
+    }
+
+    const saveOrUpdate = async () => {
+        if (id.length > 0) {
+            updateProduct(categoriaId, nombre, _id);
+        } else {
+            const tempCategoriaId = categoriaId || categories[0]._id;
+            const newProduct = await addProduct(tempCategoriaId, nombre);
+            onChange(newProduct._id, '_id');
+        }
+    }
+
+    const onDeleteProduct = async () => {
+        await deleteProduct(_id);
+        navigation.navigate('ProductsScreen');
+    }
 
     if (isLoading) return <LoadingScreen />;
 
@@ -32,6 +71,8 @@ const ProductScreen = ({ navigation, route }: Props) => {
                 <TextInput
                     placeholder='Producto'
                     style={styles.textInput}
+                    value={nombre}
+                    onChangeText={(value) => onChange(value, 'nombre')}
                 />
 
                 <Text style={styles.textLabel}>Categoría:</Text>
@@ -40,10 +81,8 @@ const ProductScreen = ({ navigation, route }: Props) => {
                     style={styles.textInput2}
                 >
                     <Picker
-                        selectedValue={selectedLanguage}
-                        onValueChange={(itemValue, itemIndex) =>
-                            setSelectedLanguage(itemValue)
-                        }
+                        selectedValue={categoriaId}
+                        onValueChange={(value) => onChange(value, 'categoriaId')}
                     >
                         {
                             categories.map(c => (
@@ -60,25 +99,46 @@ const ProductScreen = ({ navigation, route }: Props) => {
                 <Button
                     title='Guardar'
                     // TODO: POR HACER METODO
-                    onPress={() => { }}
+                    onPress={saveOrUpdate}
                     color='#4361ee'
                 />
 
-                <View style={styles.buttonDirection}>
-                    <Button
-                        title='Cámara'
-                        // TODO: POR HACER METODO
-                        onPress={() => { }}
-                        color='#4361ee'
-                    />
+                {
+                    _id.length > 0 && (
+                        <View style={styles.buttonDirection}>
+                            <Button
+                                title='Cámara'
+                                // TODO: POR HACER METODO
+                                onPress={() => { }}
+                                color='#2a9d8f'
+                            />
 
-                    <Button
-                        title='Galería'
-                        // TODO: POR HACER METODO
-                        onPress={() => { }}
-                        color='#4361ee'
-                    />
-                </View>
+                            <Button
+                                title='Galería'
+                                // TODO: POR HACER METODO
+                                onPress={() => { }}
+                                color='#2a9d8f'
+                            />
+
+                            <Button
+                                title="Eliminar"
+                                onPress={onDeleteProduct}
+                                color="#e63946" 
+                            />
+                        </View>
+                    )
+                }
+
+                {
+                    (img.length > 0) && (
+                        <Image
+                            source={{ uri: img }}
+                            style={styles.imageContainer}
+                        />
+                    )
+                }
+
+                {/* Mostrar imagen temporal */}
 
             </ScrollView>
 
@@ -121,7 +181,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         marginTop: 10,
-
+    },
+    imageContainer: {
+        width: '100%',
+        height: 300,
+        marginTop: 20
     }
 });
 

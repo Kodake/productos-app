@@ -1,8 +1,7 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import React from 'react'
-import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react';
+import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Background from '../components/Background';
-// import Background from '../components/Background';
 import { WhiteLogo } from '../components/WhiteLogo';
 import { useForm } from '../hooks/useForm';
 import loginStyles from '../theme/loginTheme';
