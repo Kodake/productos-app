@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useContext, useEffect } from 'react';
-import { Button, Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react';
+import { Alert, Button, Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { ProductsContext } from '../context/ProductsContext';
 import { useCategories } from '../hooks/useCategories';
 import { useForm } from '../hooks/useForm';
@@ -14,9 +14,10 @@ const ProductScreen = ({ navigation, route }: Props) => {
 
     const { id = '', name = '' } = route.params;
 
-    const { categories, isLoading } = useCategories();
+    const { categories } = useCategories();
     const { loadProductById, addProduct, updateProduct, deleteProduct } = useContext(ProductsContext);
-
+    const [isLoading, setIsLoading] = useState(false);
+    
     const { _id, categoriaId, nombre, img, form, onChange, setFormValue } = useForm({
         _id: id,
         categoriaId: '',
@@ -56,9 +57,35 @@ const ProductScreen = ({ navigation, route }: Props) => {
         }
     }
 
+    // const onDeleteProduct = async () => {
+    //     await deleteProduct(_id);
+    //     navigation.navigate('ProductsScreen');
+    // }
+
     const onDeleteProduct = async () => {
-        await deleteProduct(_id);
-        navigation.navigate('ProductsScreen');
+        Alert.alert('Eliminación de producto', '¿Desea eliminar el producto?',
+            [{
+                text: 'Ok', onPress: async () => {
+                    setIsLoading(true);
+                    await deleteProduct(_id);
+                    setIsLoading(false);
+                    navigation.navigate('ProductsScreen');
+                    onSuccessDelete();
+                }
+            },
+            {
+                text: 'Cancel',
+                onPress: () => { }
+            }]
+        );
+    }
+
+    const onSuccessDelete = () => {
+        Alert.alert('Eliminación de producto', 'Producto eliminado correctamente',
+            [{
+                text: 'Ok', onPress: () => { }
+            }]
+        );
     }
 
     if (isLoading) return <LoadingScreen />;
