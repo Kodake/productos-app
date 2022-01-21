@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }: any) => {
     };
 
     const logOut = async () => {
-        // await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('token');
         dispatch({ type: 'logOut' });
     };
 

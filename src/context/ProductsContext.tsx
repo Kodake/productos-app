@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react';
+import { ImagePickerResponse } from 'react-native-image-picker';
 import productsApi from '../api/productsApi';
 import { Producto, ProductsResponse } from '../interfaces/appInterfaces';
 
@@ -38,11 +39,15 @@ export const ProductsProvider = ({ children }: any) => {
     }
 
     const updateProduct = async (categoryId: string, productName: string, productId: string) => {
-        const resp = await productsApi.put<Producto>(`/productos/${productId}`, {
-            nombre: productName,
-            categoria: categoryId
-        });
-        setProducts([...products.map(prod => prod._id === productId ? resp.data : prod)]);
+        try {
+            const resp = await productsApi.put<Producto>(`/productos/${productId}`, {
+                nombre: productName,
+                categoria: categoryId
+            });
+            setProducts([...products.map(prod => prod._id === productId ? resp.data : prod)]);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const deleteProduct = async (id: string) => {        
@@ -56,8 +61,22 @@ export const ProductsProvider = ({ children }: any) => {
     }
 
     // TODO: Change type then
-    const uploadImage = async (data: any, id: string) => {
+    const uploadImage = async (data: ImagePickerResponse, productId: string) => {
+        const fileToUpload = {
+            uri: data.assets?.map(x => x.uri),
+            type: data.assets?.map(x => x.type),
+            name: data.assets?.map(x => x.fileName)
+        }
 
+        const formData = new FormData();
+        formData.append('archivo', fileToUpload);
+
+        try {
+            const resp = await productsApi.put<Producto>(`/uploads/productos/${productId}`, formData);
+            console.log(resp);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (

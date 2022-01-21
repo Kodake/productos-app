@@ -1,4 +1,6 @@
 import { Picker } from '@react-native-picker/picker';
+import { Callback, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary } from 'react-native-image-picker';
+
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
@@ -14,11 +16,13 @@ const ProductScreen = ({ navigation, route }: Props) => {
 
     const { id = '', name = '' } = route.params;
 
+    const [tempUri, setTempUri] = useState<string>();
+
     const { categories, isLoading } = useCategories();
-    const { loadProductById, addProduct, updateProduct, deleteProduct } = useContext(ProductsContext);
+    const { loadProductById, addProduct, updateProduct, deleteProduct, uploadImage } = useContext(ProductsContext);
     // const [isLoading, setIsLoading] = useState(false);
     const [loading, setLoading] = useState(false);
-    
+
     const { _id, categoriaId, nombre, img, form, onChange, setFormValue } = useForm({
         _id: id,
         categoriaId: '',
@@ -89,6 +93,32 @@ const ProductScreen = ({ navigation, route }: Props) => {
         );
     }
 
+    const takePhoto = () => {
+        launchCamera({
+            mediaType: 'photo',
+            quality: 0.5
+        }, (resp: ImagePickerResponse) => {
+            if (resp.didCancel) return;
+            if (!resp.assets?.map(x => x.uri)) return;
+
+            setTempUri(resp.assets[0].uri);
+            uploadImage(resp, _id)
+        });
+    }
+
+    const takephotoFromGallery = () => {
+        launchImageLibrary({
+            mediaType: 'photo',
+            quality: 0.5
+        }, (resp: ImagePickerResponse) => {
+            if (resp.didCancel) return;
+            if (!resp.assets?.map(x => x.uri)) return;
+
+            setTempUri(resp.assets[0].uri);
+            uploadImage(resp, _id)
+        });
+    }
+
     if (isLoading || loading) return <LoadingScreen />;
 
     return (
@@ -137,36 +167,44 @@ const ProductScreen = ({ navigation, route }: Props) => {
                             <Button
                                 title='Cámara'
                                 // TODO: POR HACER METODO
-                                onPress={() => { }}
+                                onPress={takePhoto}
                                 color='#2a9d8f'
                             />
 
                             <Button
                                 title='Galería'
                                 // TODO: POR HACER METODO
-                                onPress={() => { }}
+                                onPress={takephotoFromGallery}
                                 color='#2a9d8f'
                             />
 
                             <Button
                                 title="Eliminar"
                                 onPress={onDeleteProduct}
-                                color="#e63946" 
+                                color="#e63946"
                             />
                         </View>
                     )
                 }
 
                 {
-                    (img.length > 0) && (
+                    (img.length > 0 && !tempUri) && (
                         <Image
-                            source={{ uri: img }}
                             style={styles.imageContainer}
+                            source={{ uri: img }}
                         />
                     )
                 }
 
                 {/* Mostrar imagen temporal */}
+                {
+                    (tempUri) && (
+                        <Image
+                            style={styles.imageContainer}
+                            source={{ uri: tempUri }}
+                        />
+                    )
+                }
 
             </ScrollView>
 
