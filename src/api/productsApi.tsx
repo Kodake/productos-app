@@ -8,6 +8,7 @@ const productsApi = axios.create({ baseURL });
 productsApi.interceptors.request.use(
     async (config: any) => {
         const token = await AsyncStorage.getItem('token');
+        
         if (token) {
             config.headers['x-token'] = token;
         }

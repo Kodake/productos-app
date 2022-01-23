@@ -10,7 +10,7 @@ type ProductsContextProps = {
     updateProduct: (categoryId: string, productName: string, productId: string) => Promise<void>;
     deleteProduct: (id: string) => Promise<void>;
     loadProductById: (id: string) => Promise<Producto>;
-    uploadImage: (data: any, id: string) => Promise<void>; // Change type then
+    uploadImage: (data: any, id: string) => Promise<void>; // TODO: cambiar ANY
 }
 
 export const ProductsContext = createContext({} as ProductsContextProps);
@@ -23,59 +23,66 @@ export const ProductsProvider = ({ children }: any) => {
         loadProducts();
     }, [])
 
+
     const loadProducts = async () => {
         const resp = await productsApi.get<ProductsResponse>('/productos?limite=50');
-        // setProducts([...products, ...resp.data.productos]);
         setProducts([...resp.data.productos]);
     }
 
-    const addProduct = async (categoryId: string, productName: string):Promise<Producto> => {
+    const addProduct = async (categoryId: string, productName: string): Promise<Producto> => {
+
         const resp = await productsApi.post<Producto>('/productos', {
             nombre: productName,
             categoria: categoryId
         });
         setProducts([...products, resp.data]);
+
         return resp.data;
     }
 
     const updateProduct = async (categoryId: string, productName: string, productId: string) => {
-        try {
-            const resp = await productsApi.put<Producto>(`/productos/${productId}`, {
-                nombre: productName,
-                categoria: categoryId
-            });
-            setProducts([...products.map(prod => prod._id === productId ? resp.data : prod)]);
-        } catch (error) {
-            console.log(error);
-        }
+        const resp = await productsApi.put<Producto>(`/productos/${productId}`, {
+            nombre: productName,
+            categoria: categoryId
+        });
+        setProducts(products.map(prod => {
+            return (prod._id === productId)
+                ? resp.data
+                : prod;
+        }));
     }
 
-    const deleteProduct = async (id: string) => {        
-        const resp = await productsApi.delete<Producto>(`/productos/${id}`);      
-        setProducts(products.filter(prod => prod._id !== resp.data._id));        
+    const deleteProduct = async (id: string) => {
+        const resp = await productsApi.delete<Producto>(`/productos/${id}`);
+        setProducts(products.filter(prod => prod._id !== resp.data._id));
     }
 
     const loadProductById = async (id: string): Promise<Producto> => {
-        const resp = await productsApi.get<Producto>(`/productos/${id}`);
+        const resp = await productsApi.get<Producto>(`productos/${id}`);
         return resp.data;
-    }
+    };
 
-    // TODO: Change type then
-    const uploadImage = async (data: ImagePickerResponse, productId: string) => {
+    const uploadImage = async (data: any, id: string) => {
+
+        console.log(data.assets[0]);
+
         const fileToUpload = {
-            uri: data.assets?.map(x => x.uri),
-            type: data.assets?.map(x => x.type),
-            name: data.assets?.map(x => x.fileName)
+            uri: data.assets[0].uri,
+            type: data.assets[0].type,
+            name: data.assets[0].fileName
         }
 
         const formData = new FormData();
         formData.append('archivo', fileToUpload);
 
+        console.log(id);
+        
         try {
-            const resp = await productsApi.put<Producto>(`/uploads/productos/${productId}`, formData);
+
+            const resp = await productsApi.put(`/uploads/productos/${id}`, formData)
             console.log(resp);
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            console.log(error)
         }
     }
 
@@ -87,7 +94,7 @@ export const ProductsProvider = ({ children }: any) => {
             updateProduct,
             deleteProduct,
             loadProductById,
-            uploadImage
+            uploadImage,
         }}>
             {children}
         </ProductsContext.Provider>

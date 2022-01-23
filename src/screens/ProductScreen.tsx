@@ -95,24 +95,25 @@ const ProductScreen = ({ navigation, route }: Props) => {
 
     const takePhoto = () => {
         launchCamera({
+            cameraType: 'back',
             mediaType: 'photo',
             quality: 0.5
-        }, (resp: ImagePickerResponse) => {
+        }, (resp: any) => {
             if (resp.didCancel) return;
-            if (!resp.assets?.map(x => x.uri)) return;
+            if (!resp.assets[0].uri) return;
 
             setTempUri(resp.assets[0].uri);
             uploadImage(resp, _id)
         });
     }
 
-    const takephotoFromGallery = () => {
+    const takePhotoFromGallery = () => {
         launchImageLibrary({
             mediaType: 'photo',
             quality: 0.5
-        }, (resp: ImagePickerResponse) => {
+        }, (resp: any) => {
             if (resp.didCancel) return;
-            if (!resp.assets?.map(x => x.uri)) return;
+            if (!resp.assets[0].uri) return;
 
             setTempUri(resp.assets[0].uri);
             uploadImage(resp, _id)
@@ -174,7 +175,7 @@ const ProductScreen = ({ navigation, route }: Props) => {
                             <Button
                                 title='Galería'
                                 // TODO: POR HACER METODO
-                                onPress={takephotoFromGallery}
+                                onPress={takePhotoFromGallery}
                                 color='#2a9d8f'
                             />
 
